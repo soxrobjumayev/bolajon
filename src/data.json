@@ -1,0 +1,26 @@
+{
+  "users": [
+    {
+      "user_id": 1,
+      "ism": "Alisher",
+      "familya": "Navoi",
+      "tugilgan_sana": "2008-05-15",
+      "yashash_joy": "Toshkent shahar, Yunusobod tumani",
+      "maktab": "154-umumiy o'rta ta'lim maktabi",
+      "sinf": "9",
+      "telefon_nomer": "+998907777777",
+      "parol_hash": "Salom12345678910!#"
+    },
+    {
+      "user_id": 2,
+      "ism": "Alisher",
+      "familya": "Navoi",
+      "tugilgan_sana": "2008-05-15",
+      "yashash_joy": "Toshkent shahar, Yunusobod tumani",
+      "maktab": "154-umumiy o'rta ta'lim maktabi",
+      "sinf": "9",
+      "telefon_nomer": "+998907777797",
+      "parol_hash": "Salom12345678910!#"
+    }
+  ]
+}
