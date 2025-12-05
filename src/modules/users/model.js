@@ -18,7 +18,7 @@ async function readData() {
         return newData;
     }
 }
-
+// salom
 // JSON faylga ma'lumot yozish
 async function writeData(data) {
     await fs.writeFile(dataPath, JSON.stringify(data, null, 2));
