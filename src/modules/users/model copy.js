@@ -12,27 +12,41 @@ async function readData() {
         const data = await fs.readFile(dataPath, 'utf-8');
         return JSON.parse(data);
     } catch (error) {
+        // Agar fayl bo'lmasa, yangi yaratamiz
         const newData = { users: [] };
         await fs.writeFile(dataPath, JSON.stringify(newData, null, 2));
         return newData;
     }
 }
-
+// salom
 // JSON faylga ma'lumot yozish
 async function writeData(data) {
     await fs.writeFile(dataPath, JSON.stringify(data, null, 2));
 }
 
-const REGISTER = async ({ toliq_ism, telefon_nomer, parol }) => {
+const REGISTER = async ({
+    ism,
+    familya,
+    tugilgan_sana,
+    yashash_joy,
+    maktab,
+    sinf,
+    telefon_nomer,
+    parol
+}) => {
     try {
         // Validatsiya
-        if (!toliq_ism || !telefon_nomer || !parol) {
+        if (!ism || !familya || !tugilgan_sana || !yashash_joy ||
+            !maktab || !sinf || !telefon_nomer || !parol) {
             throw new Error("Barcha maydonlar to'ldirilishi shart!");
         }
 
-        // Sanitize
         const sanitize = (str) => str.trim().replace(/<[^>]*>/g, '');
-        toliq_ism = sanitize(toliq_ism);
+        ism = sanitize(ism);
+        familya = sanitize(familya);
+        yashash_joy = sanitize(yashash_joy);
+        maktab = sanitize(maktab);
+        sinf = sanitize(sinf);
 
         // Telefon tekshirish
         if (!/^\+998[0-9]{9}$/.test(telefon_nomer)) {
@@ -60,10 +74,14 @@ const REGISTER = async ({ toliq_ism, telefon_nomer, parol }) => {
         // Yangi foydalanuvchi
         const newUser = {
             user_id: data.users.length + 1,
-            toliq_ism,
+            ism,
+            familya,
+            tugilgan_sana,
+            yashash_joy,
+            maktab,
+            sinf,
             telefon_nomer,
-            parol_hash: parol,
-            ball: 0
+            parol_hash: parol // Test uchun oddiy parol (keyinchalik bcrypt ishlatish mumkin)
         };
 
         data.users.push(newUser);
@@ -76,9 +94,9 @@ const REGISTER = async ({ toliq_ism, telefon_nomer, parol }) => {
             message: "Muvaffaqiyatli ro'yxatdan o'tdingiz!",
             user: {
                 user_id: newUser.user_id,
-                toliq_ism: newUser.toliq_ism,
-                telefon_nomer: newUser.telefon_nomer,
-                ball: newUser.ball
+                ism: newUser.ism,
+                familya: newUser.familya,
+                telefon_nomer: newUser.telefon_nomer
             }
         };
 
@@ -124,9 +142,9 @@ const LOGIN = async ({ telefon_nomer, parol }) => {
             message: "Tizimga muvaffaqiyatli kirdingiz!",
             user: {
                 user_id: user.user_id,
-                toliq_ism: user.toliq_ism,
-                telefon_nomer: user.telefon_nomer,
-                ball: user.ball
+                ism: user.ism,
+                familya: user.familya,
+                telefon_nomer: user.telefon_nomer
             }
         };
 
@@ -138,6 +156,8 @@ const LOGIN = async ({ telefon_nomer, parol }) => {
         };
     }
 };
+
+
 
 const UPDATE_BALL = async (userId, newBall) => {
     try {
@@ -164,8 +184,8 @@ const UPDATE_BALL = async (userId, newBall) => {
             };
         }
 
-        // Ballni qo'shish (avvalgi ball + yangi ball)
-        data.users[userIndex].ball = data.users[userIndex].ball + newBall;
+        // Ballni yangilash
+        data.users[userIndex].ball = newBall;
         
         // Faylga yozish
         await writeData(data);
