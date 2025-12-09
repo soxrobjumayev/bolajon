@@ -1,20 +1,24 @@
 import model from './model.js'
 import jwt from '../../utils/jwt.js'
  
+
+
 const REGISTER = async (req, res) => {
     try {
         const result = await model.REGISTER(req.body);
-        
+
         if (result.success) {
-            // ✅ Muvaffaqiyatli ro'yxatdan o'tish
             res.status(200).json({
                 status: 200,
                 message: result.message,
                 data: result.user,
-                token: jwt.sign({ userId: result.user.user_id }) // Token qo'shildi
+                token: jwt.sign(
+                    { userId: result.user.user_id },
+                    process.env.JWT_SECRET || "SECRET_KEY",
+                    { expiresIn: "7d" }
+                )
             });
         } else {
-            // ❌ Ro'yxatdan o'tishda xatolik
             res.status(400).json({
                 status: 400,
                 message: result.message,
@@ -22,6 +26,7 @@ const REGISTER = async (req, res) => {
                 token: null
             });
         }
+
     } catch (error) {
         console.log('controller error:', error.message);
         res.status(500).json({
@@ -32,6 +37,7 @@ const REGISTER = async (req, res) => {
         });
     }
 };
+
 
 const LOGIN = async (req, res) => {
     try {

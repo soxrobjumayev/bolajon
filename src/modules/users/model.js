@@ -22,11 +22,10 @@ async function readData() {
 async function writeData(data) {
     await fs.writeFile(dataPath, JSON.stringify(data, null, 2));
 }
-
-const REGISTER = async ({ toliq_ism, telefon_nomer, parol }) => {
+const REGISTER = async ({ toliq_ism, telefon_nomer, parol, tugilgan_sana }) => {
     try {
         // Validatsiya
-        if (!toliq_ism || !telefon_nomer || !parol) {
+        if (!toliq_ism || !telefon_nomer || !parol || !tugilgan_sana) {
             throw new Error("Barcha maydonlar to'ldirilishi shart!");
         }
 
@@ -34,7 +33,7 @@ const REGISTER = async ({ toliq_ism, telefon_nomer, parol }) => {
         const sanitize = (str) => str.trim().replace(/<[^>]*>/g, '');
         toliq_ism = sanitize(toliq_ism);
 
-        // Telefon tekshirish
+        // Telefon raqam tekshirish
         if (!/^\+998[0-9]{9}$/.test(telefon_nomer)) {
             throw new Error("Telefon raqami noto'g'ri! (+998XXXXXXXXX)");
         }
@@ -42,13 +41,24 @@ const REGISTER = async ({ toliq_ism, telefon_nomer, parol }) => {
         // Parol tekshirish
         const parolRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{12,}$/;
         if (!parolRegex.test(parol)) {
-            throw new Error("Parol kamida 12 belgi, katta-kichik harf, raqam va maxsus belgi (@$!%*?&#) bo'lishi kerak!");
+            throw new Error("Parol kamida 12 belgi, katta-kichik harf, raqam va maxsus belgi bo'lishi kerak!");
         }
 
-        // Ma'lumotlarni o'qish
+        // Sana format tekshirish: YYYY-MM-DD
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(tugilgan_sana)) {
+            throw new Error("Tug'ilgan sana noto'g'ri formatda! (YYYY-MM-DD)");
+        }
+
+        // Haqiqiy sana tekshirish
+        const date = new Date(tugilgan_sana);
+        if (isNaN(date.getTime())) {
+            throw new Error("Tug'ilgan sana mavjud emas!");
+        }
+
+        // Fayldan o'qish
         const data = await readData();
-        
-        // Telefon raqam bormi tekshirish
+
+        // Raqam mavjudligini tekshirish
         const exists = data.users.find(u => u.telefon_nomer === telefon_nomer);
         if (exists) {
             return {
@@ -63,13 +73,12 @@ const REGISTER = async ({ toliq_ism, telefon_nomer, parol }) => {
             toliq_ism,
             telefon_nomer,
             parol_hash: parol,
+            tugilgan_sana,     // 🟢 bitta maydon holida saqlaymiz
             ball: 0
         };
 
         data.users.push(newUser);
         await writeData(data);
-
-        console.log('JSON ga qo\'shildi:', newUser);
 
         return {
             success: true,
@@ -78,6 +87,7 @@ const REGISTER = async ({ toliq_ism, telefon_nomer, parol }) => {
                 user_id: newUser.user_id,
                 toliq_ism: newUser.toliq_ism,
                 telefon_nomer: newUser.telefon_nomer,
+                tugilgan_sana,
                 ball: newUser.ball
             }
         };
